@@ -1,6 +1,6 @@
 {
   pkgs ? import (builtins.fetchTarball "https://github.com/NixOS/nixpkgs/archive/bc66bad58ccceccae361e84628702cfc7694efda.tar.gz") {},
-  sf ? "0.1"
+  sf ? "0.003"
 }:
 
 let
@@ -9,7 +9,7 @@ let
 
 in
 with pkgs; stdenv.mkDerivation rec {
-  name = "ldbc_snb_datagen_hadoop";
+  name = "ldbc_snb_datagen_hadoop_${sf}";
 
   src = ./.;
 
@@ -23,6 +23,7 @@ with pkgs; stdenv.mkDerivation rec {
     cat > params.ini <<EOF
     ldbc.snb.datagen.generator.scaleFactor:snb.interactive.${sf}
 
+    ldbc.snb.datagen.serializer.numUpdatePartitions:16
     ldbc.snb.datagen.serializer.dynamicActivitySerializer:ldbc.snb.datagen.serializer.snb.csv.dynamicserializer.activity.CsvBasicDynamicActivitySerializer
     ldbc.snb.datagen.serializer.dynamicPersonSerializer:ldbc.snb.datagen.serializer.snb.csv.dynamicserializer.person.CsvBasicDynamicPersonSerializer
     ldbc.snb.datagen.serializer.staticSerializer:ldbc.snb.datagen.serializer.snb.csv.staticserializer.CsvBasicStaticSerializer
@@ -32,7 +33,8 @@ with pkgs; stdenv.mkDerivation rec {
     export HADOOP_HOME=${hadoop}
     ./run.sh
 
-    cp -r social_network/* $out
+    cp -r social_network $out/
+    cp -r substitution_parameters $out/
   '';
 
   dontInstall = true;
